@@ -6,7 +6,7 @@
   <title>HYPNOS Visual Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Inter Regular -->
+  <!-- Inter Regular only -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
 
   <style>
@@ -16,7 +16,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #D524EE; /* MATCH REFERENCE */
+      background-color: #000;
       color: #fff;
       font-family: 'Inter', sans-serif;
       cursor: none;
@@ -33,15 +33,15 @@
       text-align: center;
     }
 
-    /* MATCH IMAGE STYLE */
+    /* INSPIRED CHANGE ONLY */
     .strobe-text {
-      font-size: 4.6vw;
+      font-size: 5.2vw;
       line-height: 1.1;
-      font-weight: 400;
-      text-transform: none;
+      font-weight: 400;          /* softer */
+      text-transform: none;      /* not shouting */
       letter-spacing: 0;
       color: #ffffff;
-      text-shadow: none;
+      text-shadow: none;         /* flat like reference */
       user-select: none;
     }
 
@@ -173,11 +173,17 @@
 
     startBtn.addEventListener('click', initSequence);
 
-    const words = [ /* unchanged */ ];
+    const words = [
+      "Need","Sex","Super","Horny","Every","Flash","More","Horny",
+      "Brain","Off","Reprogramming","Thoughts","Only","Horny"
+      // untouched
+    ];
 
-    /* SINGLE COLOR – MATCH IMAGE */
     const themes = [
-      { bg: "#D524EE" }
+      { bg: "#00FFE0" }, { bg: "#FF00FF" }, { bg: "#00C8FF" },
+      { bg: "#FF1744" }, { bg: "#76FF03" }, { bg: "#F500FF" },
+      { bg: "#FFD600" }, { bg: "#2979FF" }, { bg: "#00FF87" },
+      { bg: "#FF9100" }
     ];
 
     function initSequence() {
@@ -190,8 +196,11 @@
 
     function runLoop() {
       if (!isRunning) return;
+
+      const theme = themes[Math.floor(Math.random() * themes.length)];
       const word = words[Math.floor(Math.random() * words.length)];
-      body.style.backgroundColor = "#D524EE";
+
+      body.style.backgroundColor = theme.bg;
       wordEl.innerText = word;
 
       wordEl.classList.remove('pulse');
