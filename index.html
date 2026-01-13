@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HYPNOS Visual Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body, html {
       margin: 0;
@@ -17,7 +17,7 @@
       color: #fff;
       font-family: 'Inter', sans-serif;
       cursor: none;
-      transition: background-color 0.05s steps(1);
+      transition: background-color 0.04s steps(1);
     }
 
     .word-layer {
@@ -30,18 +30,17 @@
       text-align: center;
     }
 
-    /* ↓ SOFTER / SMALLER TEXT ↓ */
     .strobe-text {
-      font-size: 4.2vw;              /* smaller */
-      line-height: 1.1;
-      font-weight: 400;              /* less bold */
+      font-size: 6vw;
+      line-height: 1.05;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.08em;
       color: #ffffff;
       text-shadow:
-        0 0 8px rgba(255,255,255,0.35),
-        0 0 18px rgba(255,255,255,0.25),
-        0 0 36px rgba(255,255,255,0.15);
+        0 0 12px rgba(255,255,255,0.5),
+        0 0 28px rgba(255,255,255,0.35),
+        0 0 60px rgba(255,255,255,0.2);
       user-select: none;
     }
 
@@ -56,13 +55,11 @@
       cursor: auto;
     }
 
-    .pulse {
-      animation: textPulse 0.12s ease-out; /* smoother */
-    }
+    .pulse { animation: textPulse 0.08s ease-out; }
 
     @keyframes textPulse {
       0% { transform: scale(1); opacity: 0.85; }
-      50% { transform: scale(1.025); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 1; }
       100% { transform: scale(1); opacity: 0.85; }
     }
 
@@ -104,9 +101,9 @@
     <h2 id="strobeWord" class="strobe-text"></h2>
   </div>
 
-  <!-- Minimal Audio Toggle -->
+  <!-- Minimal Audio Toggle (icon only) -->
   <button id="toggleMute"
-    class="fixed bottom-6 right-6 z-[200] w-11 h-11 rounded-full bg-white/90 text-black text-lg shadow-lg hover:bg-white transition-colors flex items-center justify-center"
+    class="fixed bottom-6 right-6 z-[200] w-12 h-12 rounded-full bg-white/90 text-black font-bold text-lg shadow-lg hover:bg-white transition-colors flex items-center justify-center"
     style="display:none; cursor:auto;">
     🔊
   </button>
@@ -123,11 +120,14 @@
     let apiReady = false;
     const VIDEO_ID = 'D6JUpHcH1BA';
 
+    // Load YouTube API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
 
-    const safeOrigin = location.origin !== "null" ? location.origin : undefined;
+    const safeOrigin = (location.origin && location.origin !== "null")
+      ? location.origin
+      : undefined;
 
     window.onYouTubeIframeAPIReady = function () {
       player = new YT.Player('player', {
@@ -144,9 +144,12 @@
           playlist: VIDEO_ID,
           modestbranding: 1,
           rel: 0,
-          origin: safeOrigin
+          origin: safeOrigin,
+          widget_referrer: location.href
         },
-        events: { onReady: onPlayerReady }
+        events: {
+          onReady: onPlayerReady
+        }
       });
     };
 
@@ -155,7 +158,7 @@
       try {
         player.mute();
         player.playVideo();
-      } catch {}
+      } catch (e) {}
 
       startBtn.innerText = "ENTER VOID";
       startBtn.disabled = false;
@@ -176,19 +179,29 @@
     startBtn.addEventListener('click', initSequence);
 
     const words = [
-      "FOCUS","SYNC","VOID","PURE","LIGHT","CLEAR","FLOW","DRIFT",
-      "CALM","DEEP","BREATHE","SOFT","STILL","FLOAT",
-      "RELEASE","CENTER","OPEN","PULSE","GLOW","DREAM"
+      "FOCUS","SYNC","VOID","PURE","LIGHT","CLEAR","NOW","EYES",
+      "FLOW","SINK","DRIFT","CALM","DEEP","BREATHE","SOFT",
+      "MIND","TRUST","STILL","FLOAT","RELEASE",
+      "AWAKE","EXIST","CENTER","OPEN","PULSE","GLOW","DREAM"
     ];
 
+    // BRIGHTER / NEON THEMES
     const themes = [
-      { bg: "#00FFE0" }, { bg: "#FF00FF" }, { bg: "#00C8FF" },
-      { bg: "#FF1744" }, { bg: "#76FF03" }, { bg: "#FFD600" },
-      { bg: "#2979FF" }, { bg: "#00FF87" }, { bg: "#FF9100" }
+      { bg: "#00FFE0" },
+      { bg: "#FF00FF" },
+      { bg: "#00C8FF" },
+      { bg: "#FF1744" },
+      { bg: "#76FF03" },
+      { bg: "#F500FF" },
+      { bg: "#FFD600" },
+      { bg: "#2979FF" },
+      { bg: "#00FF87" },
+      { bg: "#FF9100" }
     ];
 
     function initSequence() {
       if (!apiReady || !player) return;
+
       modal.style.display = 'none';
       isRunning = true;
       muteBtn.style.display = 'flex';
@@ -196,7 +209,7 @@
       try {
         player.unMute();
         player.playVideo();
-      } catch {}
+      } catch (e) {}
 
       runLoop();
     }
@@ -214,11 +227,12 @@
       void wordEl.offsetWidth;
       wordEl.classList.add('pulse');
 
-      setTimeout(runLoop, 130 + Math.random() * 90);
+      setTimeout(runLoop, 110 + Math.random() * 90);
     }
 
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
+        if (!player) return;
         if (isRunning) {
           isRunning = false;
           player.pauseVideo();
@@ -228,7 +242,10 @@
           runLoop();
         }
       }
-      if (e.code === 'KeyM') muteBtn.click();
+
+      if (e.code === 'KeyM') {
+        muteBtn.click();
+      }
     });
   </script>
 </body>
