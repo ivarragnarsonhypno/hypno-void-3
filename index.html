@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HYPNOS Visual Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      cursor: none;
+      transition: background-color 0.05s steps(1);
+    }
+
+    .word-layer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 30;
+      width: 100%;
+      text-align: center;
+    }
+
+    .strobe-text {
+      font-size: 6vw;
+      line-height: 1.1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+      text-shadow: 0 0 20px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      cursor: auto;
+    }
+
+    .pulse { animation: textPulse 0.1s ease-out; }
+
+    @keyframes textPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.02); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+
+    /* Hidden container for YouTube */
+    #video-container {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body id="mainBody">
+  <!-- YouTube Player -->
+  <div id="video-container">
+    <div id="player"></div>
+  </div>
+
+  <!-- Start Modal -->
+  <div id="startModal" class="modal-bg">
+    <div class="text-center p-12 border-4 border-black bg-white shadow-xl max-w-lg w-full">
+      <h1 class="text-5xl font-bold mb-4 tracking-tight text-black">HYPNOS</h1>
+      <p class="mb-6 text-gray-500 font-medium text-sm tracking-widest uppercase">Deep Spectrum Protocol</p>
+
+      <div class="mb-8 text-xs text-gray-400 leading-relaxed">
+        Tip: For best results, open via a local server (not file://).<br/>
+        VS Code → Live Server, or run: <span class="font-mono text-gray-500">python -m http.server</span>
+      </div>
+
+      <button id="startButton"
+        class="w-full py-4 bg-black text-white font-bold text-lg hover:bg-gray-800 transition-colors opacity-50 cursor-wait"
+        disabled>
+        LOADING PROTOCOL...
+      </button>
+
+      <button id="toggleMute"
+        class="mt-4 w-full py-3 border-2 border-black text-black font-bold text-sm hover:bg-gray-100 transition-colors"
+        style="display:none;">
+        AUDIO: MUTED (CLICK TO UNMUTE)
+      </button>
+    </div>
+  </div>
+
+  <div class="word-layer">
+    <h2 id="strobeWord" class="strobe-text"></h2>
+  </div>
+
+  <script>
+    const body = document.getElementById('mainBody');
+    const wordEl = document.getElementById('strobeWord');
+    const modal = document.getElementById('startModal');
+    const startBtn = document.getElementById('startButton');
+    const muteBtn = document.getElementById('toggleMute');
+
+    let isRunning = false;
+    let player = null;
+    let apiReady = false;
+    const VIDEO_ID = 'D6JUpHcH1BA';
+
+    // Load YouTube IFrame API
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    // Safer origin handling (file:// breaks origin)
+    const safeOrigin = (location.origin && location.origin !== "null") ? location.origin : undefined;
+
+    // YouTube API callback must be global
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('player', {
+        height: '0',
+        width: '0',
+        videoId: VIDEO_ID,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          enablejsapi: 1,
+          playsinline: 1,
+          loop: 1,
+          playlist: VIDEO_ID,
+          // These help with stricter browser contexts:
+          modestbranding: 1,
+          rel: 0,
+          origin: safeOrigin,
+          widget_referrer: location.href
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError
+        }
+      });
+    };
+
+    function onPlayerReady() {
+      apiReady = true;
+
+      // IMPORTANT: start muted so autoplay can succeed
+      try {
+        player.mute();
+        player.setVolume(100);
+        player.playVideo();
+      } catch (e) {}
+
+      startBtn.innerText = "ENTER VOID";
+      startBtn.disabled = false;
+      startBtn.classList.remove('opacity-50', 'cursor-wait');
+
+      muteBtn.style.display = 'block';
+      updateMuteButton();
+    }
+
+    function onPlayerStateChange(e) {
+      // If it gets paused/stopped unexpectedly, don't fight the browser.
+      // User gesture (your button) is the reliable path.
+    }
+
+    function onPlayerError(e) {
+      // Common reasons: video restricted, embed disabled, origin mismatch, etc.
+      startBtn.innerText = "AUDIO FAILED (OPEN VIA LOCAL SERVER)";
+      startBtn.disabled = true;
+      startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    function updateMuteButton() {
+      if (!player) return;
+      const muted = player.isMuted();
+      muteBtn.textContent = muted ? "AUDIO: MUTED (CLICK TO UNMUTE)" : "AUDIO: ON (CLICK TO MUTE)";
+    }
+
+    muteBtn.addEventListener('click', () => {
+      if (!player) return;
+      if (player.isMuted()) {
+        player.unMute();
+        player.setVolume(100);
+      } else {
+        player.mute();
+      }
+      updateMuteButton();
+    });
+
+    startBtn.addEventListener('click', initSequence);
+
+    const words = [
+      "FOCUS","SYNC","VOID","PURE","LIGHT","CLEAR","NOW","EYES",
+      "FLOW","SINK","DRIFT","STAY","CALM","DEEP","BREATHE","SOFT",
+      "MIND","WATCH","TRUST","OBEY","STILL","FLOAT","PEACE","RELEASE",
+      "AWAKE","SLEEP","EXIST","CENTER","TRANSIT","GIVE","OPEN","BEHOLD",
+      "PULSE","GLOW","STATIC","DREAM","MELT","SOLVE","SEARCH","FOUND","SUBMIT"
+    ];
+
+    const themes = [
+      { bg: "#00FFCC" }, { bg: "#FF00FF" }, { bg: "#00E5FF" },
+      { bg: "#FF3D00" }, { bg: "#76FF03" }, { bg: "#D500F9" },
+      { bg: "#FFC400" }, { bg: "#2979FF" }, { bg: "#FF1744" },
+      { bg: "#00B0FF" }, { bg: "#64FFDA" }, { bg: "#F50057" }
+    ];
+
+    function initSequence() {
+      if (!apiReady || !player) return;
+
+      modal.style.display = 'none';
+      isRunning = true;
+
+      // User gesture → unmute + play (this is the magic)
+      try {
+        player.unMute();
+        player.setVolume(100);
+        player.playVideo();
+      } catch (e) {}
+
+      runLoop();
+    }
+
+    function runLoop() {
+      if (!isRunning) return;
+
+      const theme = themes[Math.floor(Math.random() * themes.length)];
+      const word = words[Math.floor(Math.random() * words.length)];
+
+      body.style.backgroundColor = theme.bg;
+      wordEl.innerText = word;
+
+      wordEl.classList.remove('pulse');
+      void wordEl.offsetWidth;
+      wordEl.classList.add('pulse');
+
+      setTimeout(runLoop, 120 + Math.random() * 100);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        if (!player) return;
+
+        if (isRunning) {
+          isRunning = false;
+          try { player.pauseVideo(); } catch (e) {}
+        } else {
+          isRunning = true;
+          try { player.playVideo(); } catch (e) {}
+          runLoop();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
