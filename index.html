@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HYPNOS Visual Terminal</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     body, html {
       margin: 0;
@@ -13,59 +15,152 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #000;
+      background: #000;
       color: #fff;
       font-family: 'Inter', sans-serif;
       cursor: none;
-      transition: background-color 0.05s steps(1);
     }
 
+    /* SECOND PAGE: EXACT screenshot look */
     .word-layer {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      inset: 0;
+      display: grid;
+      place-items: center;
       z-index: 30;
-      width: 100%;
       text-align: center;
+      pointer-events: none;
     }
 
-    /* ↓ SOFTER / SMALLER TEXT ↓ */
     .strobe-text {
-      font-size: 4.2vw;              /* smaller */
-      line-height: 1.1;
-      font-weight: 400;              /* less bold */
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
+      font-size: 6vw;       /* matches the feel of your ref */
+      font-weight: 400;     /* Inter Regular */
+      letter-spacing: 0;
+      text-transform: none;
       color: #ffffff;
-      text-shadow:
-        0 0 8px rgba(255,255,255,0.35),
-        0 0 18px rgba(255,255,255,0.25),
-        0 0 36px rgba(255,255,255,0.15);
+      text-shadow: none;
       user-select: none;
+      line-height: 1;
     }
 
+    /* Modal */
     .modal-bg {
       position: fixed;
       inset: 0;
-      background: #ffffff;
+      z-index: 100;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
       cursor: auto;
+      overflow: hidden;
+      background: radial-gradient(1200px 900px at 15% 20%, rgba(255, 0, 128, 0.30), transparent 55%),
+                  radial-gradient(1000px 800px at 80% 30%, rgba(255, 140, 0, 0.25), transparent 55%),
+                  radial-gradient(900px 700px at 50% 85%, rgba(140, 0, 255, 0.20), transparent 60%),
+                  #060006;
     }
 
-    .pulse {
-      animation: textPulse 0.12s ease-out; /* smoother */
+    /* HOT animated blobs */
+    .hot-blob {
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 9999px;
+      filter: blur(50px);
+      opacity: 0.85;
+      mix-blend-mode: screen;
+      animation: floaty 7s ease-in-out infinite;
     }
 
-    @keyframes textPulse {
-      0% { transform: scale(1); opacity: 0.85; }
-      50% { transform: scale(1.025); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.85; }
+    .blob-1 {
+      left: -120px;
+      top: -140px;
+      background: radial-gradient(circle at 30% 30%, #ff2bd6, transparent 60%),
+                  radial-gradient(circle at 70% 70%, #ff6a00, transparent 60%);
+      animation-duration: 8s;
     }
 
+    .blob-2 {
+      right: -160px;
+      top: 60px;
+      background: radial-gradient(circle at 30% 30%, #ff003d, transparent 60%),
+                  radial-gradient(circle at 70% 70%, #ffd000, transparent 60%);
+      animation-duration: 9s;
+      animation-delay: -2s;
+    }
+
+    .blob-3 {
+      left: 20%;
+      bottom: -220px;
+      width: 640px;
+      height: 640px;
+      background: radial-gradient(circle at 30% 30%, #8f00ff, transparent 60%),
+                  radial-gradient(circle at 70% 70%, #ff00a8, transparent 60%);
+      animation-duration: 10s;
+      animation-delay: -3s;
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(30px, -24px) scale(1.04); }
+    }
+
+    /* Glass card */
+    .hot-card {
+      position: relative;
+      z-index: 2;
+      width: min(520px, 92vw);
+      padding: 46px 40px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+      box-shadow:
+        0 22px 70px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.04) inset;
+      backdrop-filter: blur(14px);
+    }
+
+    .hot-title {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #fff;
+      text-shadow: 0 0 18px rgba(255, 0, 190, 0.35);
+    }
+
+    .hot-sub {
+      color: rgba(255,255,255,0.70);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    /* HOT CTA */
+    .hot-btn {
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: 16px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #0b0010;
+      background: linear-gradient(90deg, #ff2bd6, #ff6a00, #ffd000);
+      box-shadow:
+        0 18px 40px rgba(255, 70, 0, 0.25),
+        0 0 0 1px rgba(255,255,255,0.25) inset;
+      transition: transform 160ms ease, filter 160ms ease, opacity 160ms ease;
+      cursor: pointer;
+    }
+
+    .hot-btn:hover { transform: translateY(-1px); filter: brightness(1.05) saturate(1.08); }
+    .hot-btn:active { transform: translateY(0px); filter: brightness(0.98); }
+
+    .hot-btn[disabled] {
+      opacity: 0.45;
+      cursor: wait;
+      filter: grayscale(0.25);
+    }
+
+    /* Hidden YouTube container */
     #video-container {
       position: absolute;
       width: 1px;
@@ -74,6 +169,29 @@
       pointer-events: none;
       overflow: hidden;
     }
+
+    /* Icon-only audio toggle (SECOND PAGE ONLY) */
+    #toggleMute {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 200;
+      width: 46px;
+      height: 46px;
+      border-radius: 9999px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.92);
+      color: #0a0a0a;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.25);
+      cursor: auto; /* keep visible cursor on button */
+      user-select: none;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    #toggleMute:hover { transform: translateY(-1px); background: #fff; }
+    #toggleMute:active { transform: translateY(0); }
   </style>
 </head>
 
@@ -84,32 +202,33 @@
     <div id="player"></div>
   </div>
 
-  <!-- Start Modal -->
+  <!-- HOT Start Modal -->
   <div id="startModal" class="modal-bg">
-    <div class="text-center p-12 border-4 border-black bg-white shadow-xl max-w-lg w-full">
-      <h1 class="text-5xl font-bold mb-4 tracking-tight text-black">HYPNOS</h1>
-      <p class="mb-10 text-gray-500 font-medium text-sm tracking-widest uppercase">
-        Deep Spectrum Protocol
-      </p>
+    <div class="hot-blob blob-1"></div>
+    <div class="hot-blob blob-2"></div>
+    <div class="hot-blob blob-3"></div>
 
-      <button id="startButton"
-        class="w-full py-4 bg-black text-white font-bold text-lg hover:bg-gray-800 transition-colors opacity-50 cursor-wait"
-        disabled>
+    <div class="hot-card text-center">
+      <div class="hot-sub mb-4">Deep Spectrum Protocol</div>
+      <h1 class="hot-title text-5xl mb-6">HYPNOS</h1>
+
+      <div class="text-sm text-white/70 mb-10 leading-relaxed">
+        Enter when you're ready.
+      </div>
+
+      <button id="startButton" class="hot-btn" disabled>
         LOADING PROTOCOL...
       </button>
     </div>
   </div>
 
+  <!-- SECOND PAGE content -->
   <div class="word-layer">
-    <h2 id="strobeWord" class="strobe-text"></h2>
+    <h2 id="strobeWord" class="strobe-text">Ask</h2>
   </div>
 
-  <!-- Minimal Audio Toggle -->
-  <button id="toggleMute"
-    class="fixed bottom-6 right-6 z-[200] w-11 h-11 rounded-full bg-white/90 text-black text-lg shadow-lg hover:bg-white transition-colors flex items-center justify-center"
-    style="display:none; cursor:auto;">
-    🔊
-  </button>
+  <!-- Icon-only audio toggle (no label) -->
+  <button id="toggleMute" aria-label="Toggle audio">🔊</button>
 
   <script>
     const body = document.getElementById('mainBody');
@@ -118,17 +237,19 @@
     const startBtn = document.getElementById('startButton');
     const muteBtn = document.getElementById('toggleMute');
 
-    let isRunning = false;
     let player = null;
     let apiReady = false;
+
     const VIDEO_ID = 'D6JUpHcH1BA';
 
+    // Load YouTube IFrame API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
 
-    const safeOrigin = location.origin !== "null" ? location.origin : undefined;
+    const safeOrigin = (location.origin && location.origin !== "null") ? location.origin : undefined;
 
+    // Must be global
     window.onYouTubeIframeAPIReady = function () {
       player = new YT.Player('player', {
         height: '0',
@@ -144,28 +265,60 @@
           playlist: VIDEO_ID,
           modestbranding: 1,
           rel: 0,
-          origin: safeOrigin
+          origin: safeOrigin,
+          widget_referrer: location.href
         },
-        events: { onReady: onPlayerReady }
+        events: {
+          onReady: onPlayerReady
+        }
       });
     };
 
     function onPlayerReady() {
       apiReady = true;
+
+      // Autoplay muted is allowed
       try {
         player.mute();
+        player.setVolume(100);
         player.playVideo();
-      } catch {}
+      } catch (e) {}
 
-      startBtn.innerText = "ENTER VOID";
+      startBtn.textContent = "ENTER VOID";
       startBtn.disabled = false;
-      startBtn.classList.remove('opacity-50', 'cursor-wait');
     }
+
+    function setSecondPageExactLook() {
+      // EXACT screenshot background + centered "Ask"
+      body.style.backgroundColor = "#D524EE";
+      wordEl.textContent = "Ask";
+    }
+
+    function enterVoid() {
+      if (!apiReady || !player) return;
+
+      modal.style.display = "none";
+      setSecondPageExactLook();
+
+      // Show audio toggle on second page only
+      muteBtn.style.display = "flex";
+
+      // User gesture → unmute + play (works on GitHub Pages)
+      try {
+        player.unMute();
+        player.setVolume(100);
+        player.playVideo();
+        muteBtn.textContent = "🔊";
+      } catch (e) {}
+    }
+
+    startBtn.addEventListener('click', enterVoid);
 
     muteBtn.addEventListener('click', () => {
       if (!player) return;
       if (player.isMuted()) {
         player.unMute();
+        player.setVolume(100);
         muteBtn.textContent = "🔊";
       } else {
         player.mute();
@@ -173,156 +326,25 @@
       }
     });
 
-    startBtn.addEventListener('click', initSequence);
-
-     const words = [
-      "Need",
-      "Sex",
-      "Super",   
-      "Horny",
-      "Every",
-      "Flash", 
-      "More", 
-      "Horny", 
-      "Brain", 
-      "Off", 
-      "Reprogramming",
-      "Thoughts", 
-      "Only", 
-      "Horny", 
-      "Only", 
-      "Sex", 
-      "Need", 
-      "Sex", 
-      "Need", 
-      "Dick", 
-      "Want", 
-      "To",
-      "Masturbate", 
-      "Pleasure", 
-      "Overwhelming", 
-      "A thousand", 
-      "Times",
-      "The",
-      "Pleasure", 
-      "Every", 
-      "Word", 
-      "So",
-      "Horny", 
-      "Need", 
-      "Pleasure", 
-      "Want", 
-      "To", 
-      "Strip", 
-      "Want", 
-      "To", 
-      "Show", 
-      "Of",
-      "Body",
-      "Wet", 
-      "Horny", 
-      "Sensitive", 
-      "Pleasure", 
-      "Need", 
-      "To",
-      "Cum",
-      "All", 
-      "I",
-      "Want", 
-      "To",
-      "Do",
-      "Is",
-      "Cum", 
-      "And", 
-      "Fuck",
-      "Show", 
-      "My", 
-      "Body", 
-      "Off",
-      "Needy", 
-      "Horny",
-      "Toy",
-      "My", 
-      "Purpose", 
-      "Is",
-      "To",
-      "Cum",
-      "And", 
-      "Pleasure", 
-      "Myself", 
-      "Until",
-      "Oblivion", 
-      "Every",
-      "Rub", 
-      "Every", 
-      "Touch", 
-      "Brings", 
-      "Me",
-      "Million",
-      "Time", 
-      "Deeper", 
-      "In", 
-      "To",
-      "Pleasure", 
-      "Half", 
-      "To", 
-      "Ask",
-      "Permission", 
-      "To",
-      "Cum" 
-    ];
-
-
-    const themes = [
-      { bg: "#00FFE0" }, { bg: "#FF00FF" }, { bg: "#00C8FF" },
-      { bg: "#FF1744" }, { bg: "#76FF03" }, { bg: "#FFD600" },
-      { bg: "#2979FF" }, { bg: "#00FF87" }, { bg: "#FF9100" }
-    ];
-
-    function initSequence() {
-      if (!apiReady || !player) return;
-      modal.style.display = 'none';
-      isRunning = true;
-      muteBtn.style.display = 'flex';
-
-      try {
-        player.unMute();
-        player.playVideo();
-      } catch {}
-
-      runLoop();
-    }
-
-    function runLoop() {
-      if (!isRunning) return;
-
-      const theme = themes[Math.floor(Math.random() * themes.length)];
-      const word = words[Math.floor(Math.random() * words.length)];
-
-      body.style.backgroundColor = theme.bg;
-      wordEl.innerText = word;
-
-      wordEl.classList.remove('pulse');
-      void wordEl.offsetWidth;
-      wordEl.classList.add('pulse');
-
-      setTimeout(runLoop, 130 + Math.random() * 90);
-    }
-
+    // Keyboard shortcuts:
+    // Space = play/pause, M = mute toggle
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        if (isRunning) {
-          isRunning = false;
-          player.pauseVideo();
-        } else {
-          isRunning = true;
-          player.playVideo();
-          runLoop();
-        }
+      if (!player) return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        const state = player.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) player.pauseVideo();
+        else player.playVideo();
       }
-      if (e.code === 'KeyM') muteBtn.click();
+
+      if (e.code === "KeyM") {
+        muteBtn.click();
+      }
     });
+
+    // Default the second page base text (will be shown after enter)
+    wordEl.textContent = "Ask";
   </script>
 </body>
 </html>
-
