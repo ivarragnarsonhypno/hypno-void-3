@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HYPNOS Visual Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     body, html {
       margin: 0;
@@ -13,8 +13,8 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #000000;
-      color: #ffffff;
+      background-color: #000;
+      color: #fff;
       font-family: 'Inter', sans-serif;
       cursor: none;
       transition: background-color 0.05s steps(1);
@@ -30,14 +30,18 @@
       text-align: center;
     }
 
+    /* ↓ SOFTER / SMALLER TEXT ↓ */
     .strobe-text {
-      font-size: 6vw;
+      font-size: 4.2vw;              /* smaller */
       line-height: 1.1;
-      font-weight: 700;
+      font-weight: 400;              /* less bold */
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.12em;
       color: #ffffff;
-      text-shadow: 0 0 20px rgba(0,0,0,0.3);
+      text-shadow:
+        0 0 8px rgba(255,255,255,0.35),
+        0 0 18px rgba(255,255,255,0.25),
+        0 0 36px rgba(255,255,255,0.15);
       user-select: none;
     }
 
@@ -52,15 +56,16 @@
       cursor: auto;
     }
 
-    .pulse { animation: textPulse 0.1s ease-out; }
-
-    @keyframes textPulse {
-      0% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.02); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.8; }
+    .pulse {
+      animation: textPulse 0.12s ease-out; /* smoother */
     }
 
-    /* Hidden container for YouTube */
+    @keyframes textPulse {
+      0% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.025); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.85; }
+    }
+
     #video-container {
       position: absolute;
       width: 1px;
@@ -73,6 +78,7 @@
 </head>
 
 <body id="mainBody">
+
   <!-- YouTube Player -->
   <div id="video-container">
     <div id="player"></div>
@@ -82,7 +88,9 @@
   <div id="startModal" class="modal-bg">
     <div class="text-center p-12 border-4 border-black bg-white shadow-xl max-w-lg w-full">
       <h1 class="text-5xl font-bold mb-4 tracking-tight text-black">HYPNOS</h1>
-      <p class="mb-8 text-gray-500 font-medium text-sm tracking-widest uppercase">Deep Spectrum Protocol</p>
+      <p class="mb-10 text-gray-500 font-medium text-sm tracking-widest uppercase">
+        Deep Spectrum Protocol
+      </p>
 
       <button id="startButton"
         class="w-full py-4 bg-black text-white font-bold text-lg hover:bg-gray-800 transition-colors opacity-50 cursor-wait"
@@ -96,11 +104,11 @@
     <h2 id="strobeWord" class="strobe-text"></h2>
   </div>
 
-  <!-- Floating Mute Toggle (shows AFTER entering) -->
+  <!-- Minimal Audio Toggle -->
   <button id="toggleMute"
-    class="fixed bottom-6 right-6 z-[200] px-4 py-3 rounded-xl bg-white/90 text-black font-bold text-xs tracking-widest uppercase shadow-lg hover:bg-white transition-colors"
+    class="fixed bottom-6 right-6 z-[200] w-11 h-11 rounded-full bg-white/90 text-black text-lg shadow-lg hover:bg-white transition-colors flex items-center justify-center"
     style="display:none; cursor:auto;">
-    AUDIO: MUTED
+    🔊
   </button>
 
   <script>
@@ -115,15 +123,12 @@
     let apiReady = false;
     const VIDEO_ID = 'D6JUpHcH1BA';
 
-    // Load YouTube IFrame API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
 
-    // Safer origin handling (file:// breaks origin)
-    const safeOrigin = (location.origin && location.origin !== "null") ? location.origin : undefined;
+    const safeOrigin = location.origin !== "null" ? location.origin : undefined;
 
-    // YouTube API callback must be global
     window.onYouTubeIframeAPIReady = function () {
       player = new YT.Player('player', {
         height: '0',
@@ -139,176 +144,60 @@
           playlist: VIDEO_ID,
           modestbranding: 1,
           rel: 0,
-          origin: safeOrigin,
-          widget_referrer: location.href
+          origin: safeOrigin
         },
-        events: {
-          onReady: onPlayerReady,
-          onError: onPlayerError
-        }
+        events: { onReady: onPlayerReady }
       });
     };
 
     function onPlayerReady() {
       apiReady = true;
-
-      // Start muted so autoplay can succeed
       try {
         player.mute();
-        player.setVolume(100);
         player.playVideo();
-      } catch (e) {}
+      } catch {}
 
       startBtn.innerText = "ENTER VOID";
       startBtn.disabled = false;
       startBtn.classList.remove('opacity-50', 'cursor-wait');
     }
 
-    function onPlayerError() {
-      startBtn.innerText = "AUDIO FAILED";
-      startBtn.disabled = true;
-      startBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    }
-
-    function updateMuteButton() {
-      if (!player) return;
-      muteBtn.textContent = player.isMuted() ? "AUDIO: MUTED" : "AUDIO: ON";
-    }
-
     muteBtn.addEventListener('click', () => {
       if (!player) return;
       if (player.isMuted()) {
         player.unMute();
-        player.setVolume(100);
+        muteBtn.textContent = "🔊";
       } else {
         player.mute();
+        muteBtn.textContent = "🔇";
       }
-      updateMuteButton();
     });
 
     startBtn.addEventListener('click', initSequence);
 
     const words = [
-      "Need",
-      "Sex",
-      "Super",   
-      "Horny",
-      "Every",
-      "Flash", 
-      "More", 
-      "Horny", 
-      "Brain", 
-      "Off", 
-      "Reprogramming",
-      "Thoughts", 
-      "Only", 
-      "Horny", 
-      "Only", 
-      "Sex", 
-      "Need", 
-      "Sex", 
-      "Need", 
-      "Dick", 
-      "Want", 
-      "To",
-      "Masturbate", 
-      "Pleasure", 
-      "Overwhelming", 
-      "A thousand", 
-      "Times",
-      "The",
-      "Pleasure", 
-      "Every", 
-      "Word", 
-      "So",
-      "Horny", 
-      "Need", 
-      "Pleasure", 
-      "Want", 
-      "To", 
-      "Strip", 
-      "Want", 
-      "To", 
-      "Show", 
-      "Of",
-      "Body",
-      "Wet", 
-      "Horny", 
-      "Sensitive", 
-      "Pleasure", 
-      "Need", 
-      "To",
-      "Cum",
-      "All", 
-      "I",
-      "Want", 
-      "To",
-      "Do",
-      "Is",
-      "Cum", 
-      "And", 
-      "Fuck",
-      "Show", 
-      "My", 
-      "Body", 
-      "Off",
-      "Needy", 
-      "Horny",
-      "Toy",
-      "My", 
-      "Purpose", 
-      "Is",
-      "To",
-      "Cum",
-      "And", 
-      "Pleasure", 
-      "Myself", 
-      "Until",
-      "Oblivion", 
-      "Every",
-      "Rub", 
-      "Every", 
-      "Touch", 
-      "Brings", 
-      "Me",
-      "Million",
-      "Time", 
-      "Deeper", 
-      "In", 
-      "To",
-      "Pleasure", 
-      "Half", 
-      "To", 
-      "Ask",
-      "Permission", 
-      "To",
-      "Cum" 
+      "FOCUS","SYNC","VOID","PURE","LIGHT","CLEAR","FLOW","DRIFT",
+      "CALM","DEEP","BREATHE","SOFT","STILL","FLOAT",
+      "RELEASE","CENTER","OPEN","PULSE","GLOW","DREAM"
     ];
 
     const themes = [
-      { bg: "#00FFCC" }, { bg: "#FF00FF" }, { bg: "#00E5FF" },
-      { bg: "#FF3D00" }, { bg: "#76FF03" }, { bg: "#D500F9" },
-      { bg: "#FFC400" }, { bg: "#2979FF" }, { bg: "#FF1744" },
-      { bg: "#00B0FF" }, { bg: "#64FFDA" }, { bg: "#F50057" }
+      { bg: "#00FFE0" }, { bg: "#FF00FF" }, { bg: "#00C8FF" },
+      { bg: "#FF1744" }, { bg: "#76FF03" }, { bg: "#FFD600" },
+      { bg: "#2979FF" }, { bg: "#00FF87" }, { bg: "#FF9100" }
     ];
 
     function initSequence() {
       if (!apiReady || !player) return;
-
       modal.style.display = 'none';
       isRunning = true;
+      muteBtn.style.display = 'flex';
 
-      // Show audio control only AFTER entering
-      muteBtn.style.display = 'block';
-
-      // User gesture → unmute + play
       try {
         player.unMute();
-        player.setVolume(100);
         player.playVideo();
-      } catch (e) {}
+      } catch {}
 
-      updateMuteButton();
       runLoop();
     }
 
@@ -325,34 +214,21 @@
       void wordEl.offsetWidth;
       wordEl.classList.add('pulse');
 
-      setTimeout(runLoop, 120 + Math.random() * 100);
+      setTimeout(runLoop, 130 + Math.random() * 90);
     }
 
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
-        if (!player) return;
-
         if (isRunning) {
           isRunning = false;
-          try { player.pauseVideo(); } catch (e) {}
+          player.pauseVideo();
         } else {
           isRunning = true;
-          try { player.playVideo(); } catch (e) {}
+          player.playVideo();
           runLoop();
         }
       }
-
-      // optional: press M to toggle mute
-      if (e.code === 'KeyM') {
-        if (!player) return;
-        if (player.isMuted()) {
-          player.unMute();
-          player.setVolume(100);
-        } else {
-          player.mute();
-        }
-        updateMuteButton();
-      }
+      if (e.code === 'KeyM') muteBtn.click();
     });
   </script>
 </body>
